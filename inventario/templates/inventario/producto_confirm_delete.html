@@ -1,0 +1,37 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Confirmar Eliminación - Sistema de Bodega Inteligente{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <div class="text-center mb-4">
+                    <i class="fa-solid fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+                    <h2 class="h4 mb-2">Eliminar Producto</h2>
+                    <p class="text-muted mb-0">¿Estás seguro de que deseas eliminar este producto?</p>
+                </div>
+
+                <div class="alert alert-warning mb-4">
+                    <strong>Producto:</strong> {{ producto.nombre }}<br>
+                    <strong>Código:</strong> {{ producto.codigo_de_barras }}<br>
+                    <strong>Stock:</strong> {{ producto.cantidad_en_stock }} unidades
+                </div>
+
+                <p class="text-muted small mb-4">
+                    <i class="fa-solid fa-info-circle"></i> Esta acción no se puede deshacer. Se eliminará completamente del sistema.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-danger btn-lg">Sí, Eliminar</button>
+                        <a href="{% url 'producto_list' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

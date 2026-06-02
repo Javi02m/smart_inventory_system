@@ -1,0 +1,78 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Registrar Movimiento - Sistema de Bodega Inteligente{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center" style="min-height: 75vh;">
+    <div class="col-12 col-lg-7 col-xl-6">
+        <div class="card card-custom shadow-lg border-0">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1">Registrar Movimiento</h2>
+                        <p class="text-muted mb-0">Entrada o salida de mercancía. El stock se ajusta automáticamente.</p>
+                    </div>
+                    <a href="{% url 'producto_list' %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                </div>
+
+                <form method="post" id="movimientoForm" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-3">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="id_producto" class="form-label fw-semibold">Producto</label>
+                        {{ form.producto }}
+                        {% if form.producto.errors %}
+                            <div class="text-danger small mt-1">{{ form.producto.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="id_tipo" class="form-label fw-semibold">Tipo de Movimiento</label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                                <div class="text-danger small mt-1">{{ form.tipo.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="id_cantidad" class="form-label fw-semibold">Cantidad</label>
+                            {{ form.cantidad }}
+                            {% if form.cantidad.errors %}
+                                <div class="text-danger small mt-1">{{ form.cantidad.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        <label for="id_motivo" class="form-label fw-semibold">Motivo</label>
+                        {{ form.motivo }}
+                        {% if form.motivo.errors %}
+                            <div class="text-danger small mt-1">{{ form.motivo.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'producto_list' %}" class="btn btn-light border px-4">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Procesar Movimiento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('#movimientoForm input, #movimientoForm select, #movimientoForm textarea');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+                input.classList.add('form-control');
+            }
+        });
+    });
+</script>
+{% endblock %}

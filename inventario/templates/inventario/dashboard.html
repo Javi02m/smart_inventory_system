@@ -1,0 +1,132 @@
+{% extends 'inventario/base.html' %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Tarjeta Total -->
+    <div class="col-md-4">
+        <div class="card card-custom bg-white border-start border-primary border-4 p-4 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted text-uppercase small fw-bold">Total Productos</h6>
+                    <h2 class="fw-bold text-dark mb-0">{{ total_productos|default:"0" }}</h2>
+                </div>
+                <div class="text-primary"><i class="fa-solid fa-boxes-stacked fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+    <!-- Tarjeta Alerta Stock (Semáforo Rojo) -->
+    <div class="col-md-4">
+        <div class="card card-custom bg-white border-start border-danger border-4 p-4 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-danger text-uppercase small fw-bold">Stock Crítico (&lt;10 u)</h6>
+                    <h2 class="fw-bold text-danger mb-0">{{ stock_critico_count|default:"0" }}</h2>
+                </div>
+                <div class="text-danger"><i class="fa-solid fa-triangle-exclamation fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+    <!-- Tarjeta Alerta Vencimiento (Semáforo Amarillo) -->
+    <div class="col-md-4">
+        <div class="card card-custom bg-white border-start border-warning border-4 p-4 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-warning text-uppercase small fw-bold">Próximos a Vencer</h6>
+                    <h2 class="fw-bold text-warning mb-0">{{ proximos_vencer_count|default:"0" }}</h2>
+                </div>
+                <div class="text-warning"><i class="fa-solid fa-hourglass-half fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Alertas Críticas -->
+<div class="card card-custom p-4 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-bell text-danger me-2"></i>Alertas de Atención Inmediata en Bodega</h5>
+        <a href="{% url 'producto_list' %}" class="btn btn-outline-primary btn-sm">Ver todo el inventario</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Producto</th>
+                    <th>Código de Barras</th>
+                    <th>Stock actual</th>
+                    <th>Estado Stock</th>
+                    <th>Vencimiento</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prod in productos_criticos %}
+                <tr>
+                    <td class="fw-bold">{{ prod.nombre }}</td>
+                    <td><code>{{ prod.codigo_de_barras }}</code></td>
+                    <td>{{ prod.cantidad_en_stock }} unidades</td>
+                    <td>
+                        {% if prod.cantidad_en_stock < 10 %}
+                            <span class="badge bg-danger">CRÍTICO</span>
+                        {% else %}
+                            <span class="badge bg-warning">ALERTA</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="text-muted">{{ prod.fecha_caducidad|date:"d/m/Y" }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="fa-regular fa-circle-check text-success fa-2x mb-2"></i>
+                        <p class="mb-0">¡Todo al día! No hay alertas críticas de stock o caducidad por ahora.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Historial de Movimientos -->
+<div class="card card-custom p-4 shadow-sm mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-arrows-up-down text-info me-2"></i>Últimos Movimientos de Bodega</h5>
+        <a href="{% url 'registrar_movimiento' %}" class="btn btn-info btn-sm">+ Registrar Movimiento</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Producto</th>
+                    <th>Tipo</th>
+                    <th>Cantidad</th>
+                    <th>Motivo</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movimiento in ultimos_movimientos %}
+                <tr>
+                    <td class="fw-bold">{{ movimiento.producto.nombre }}</td>
+                    <td>
+                        {% if movimiento.tipo == 'ENTRADA' %}
+                            <span class="badge bg-success">Entrada</span>
+                        {% else %}
+                            <span class="badge bg-danger">Salida</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ movimiento.cantidad }} unidades</td>
+                    <td><small>{{ movimiento.motivo }}</small></td>
+                    <td><small class="text-muted">{{ movimiento.fecha|date:"d/m/Y H:i" }}</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <p class="mb-0">No se han registrado movimientos hoy.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

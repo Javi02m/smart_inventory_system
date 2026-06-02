@@ -1,0 +1,115 @@
+{% extends 'inventario/base.html' %}
+
+{% block content %}
+<div class="card card-custom p-4 shadow-sm mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Control General de Inventario</h4>
+            <p class="text-muted small mb-0">Gestión de productos y códigos de barras para bodega</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'registrar_movimiento' %}" class="btn btn-secondary fw-bold py-2 px-3 shadow-sm">
+                <i class="fa-solid fa-arrows-up-down me-2"></i>🔄 Registrar Entrada/Salida
+            </a>
+            <a href="{% url 'producto_create' %}" class="btn btn-success fw-bold py-2 px-3 shadow-sm">
+                <i class="fa-solid fa-plus me-2"></i>Registrar Producto
+            </a>
+        </div>
+    </div>
+
+    <!-- Buscador con consulta Django -->
+    <form method="get" action="" class="mb-3" style="max-width: 500px;">
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="text" name="q" id="inventarioBuscar" class="form-control border-start-0 ps-0" placeholder="Escribe nombre o escanea código de barras..." value="{{ request.GET.q|default_if_none:'' }}">
+        </div>
+    </form>
+
+    <!-- Tabla Responsiva -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" id="tablaProductos">
+            <thead class="table-light">
+                <tr>
+                    <th>Imagen</th>
+                    <th>Producto / Código</th>
+                    <th>Categoría</th>
+                    <th>Proveedor</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Estado Estante</th>
+                    <th>Vencimiento</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prod in productos %}
+                <tr class="producto-fila">
+                    <td>
+                        {% if prod.imagen %}
+                            <img src="{{ prod.imagen.url }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light rounded text-muted d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px;">
+                                <i class="fa-regular fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark nombre-prod">{{ prod.nombre }}</div>
+                        <small class="text-muted barcode-prod"><i class="fa-solid fa-barcode me-1"></i>{{ prod.codigo_de_barras }}</small>
+                    </td>
+                    <td><span class="badge bg-secondary opacity-75">{{ prod.categoria.nombre }}</span></td>
+                    <td><small>{{ prod.proveedor.nombre }}</small></td>
+                    <td class="fw-bold text-success">${{ prod.precio }}</td>
+                    <td>
+                        <span class="fw-bold">{{ prod.cantidad_en_stock }}</span>
+                        {% if prod.cantidad_en_stock < 10 %}
+                            <span class="badge bg-danger ms-1">Crítico</span>
+                        {% elif prod.cantidad_en_stock < 20 %}
+                            <span class="badge bg-warning text-dark ms-1">Bajo</span>
+                        {% else %}
+                            <span class="badge bg-success ms-1">OK</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if prod.estado_estante == 'BLOQUEADO' %}
+                            <span class="badge bg-danger">❌ NO COLOCAR EN ESTANTE</span>
+                        {% else %}
+                            <span class="badge bg-success">🟢 Disponible</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ prod.fecha_caducidad|date:"d/m/Y" }}</small></td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'producto_update' prod.pk %}" class="btn btn-outline-primary" title="Editar"><i class="fa-solid fa-pen"></i></a>
+                            <a href="{% url 'producto_delete' prod.pk %}" class="btn btn-outline-danger" title="Eliminar"><i class="fa-solid fa-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">No hay productos registrados en el inventario.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JS para filtrado inmediato sin recargar página -->
+<script>
+    document.getElementById('inventarioBuscar').addEventListener('keyup', function() {
+        let filtro = this.value.toLowerCase();
+        let filas = document.querySelectorAll('.producto-fila');
+        
+        filas.forEach(fila => {
+            let nombre = fila.querySelector('.nombre-prod').textContent.toLowerCase();
+            let codigo = fila.querySelector('.barcode-prod').textContent.toLowerCase();
+            if (nombre.includes(filtro) || codigo.includes(filtro)) {
+                fila.style.display = "";
+            } else {
+                fila.style.display = "none";
+            }
+        });
+    });
+</script>
+{% endblock %}
